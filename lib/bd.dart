@@ -127,10 +127,12 @@ class ConextionBD {
 //--------------------------------------Consultas de los productos--------------------------
   static Future<void> insertProducto(Producto producto) async {
     String query =
-        "INSERT INTO producto (codigo,idGrupo,um,precioIndicidual,cantidad,nombre,nombrePersona,fecha,precioPonderado) VALUES ('${producto.codigo}',${producto.idGrupo},'${producto.um}',${producto.precioIndividual},${producto.cantidad},'${producto.nombre}','${producto.nombrePersona}','${producto.fecha}',${producto.precioPonderado})";
+        "INSERT INTO producto (codigo,idGrupo,um,precioIndicidual,cantidad,nombre,nombrePersona,fecha,precioPonderado, id_punto_de_venta, tipo_de_cambio) VALUES ('${producto.codigo}',${producto.idGrupo},'${producto.um}',${producto.precioIndividual},${producto.cantidad},'${producto.nombre}','${producto.nombrePersona}','${producto.fecha}',${producto.precioPonderado}, ${producto.idPuntodeVenta}, ${producto.tipoDeCambio})";
     await _executeQuery(query);
   }
-  static Future<void> insertMovimientoEntrada(String fecha ,int cantidad, String codigo,String persona,String nombreProducto) async {
+
+  static Future<void> insertMovimientoEntrada(String fecha, int cantidad,
+      String codigo, String persona, String nombreProducto) async {
     String query =
         "INSERT INTO movimientoentrada (cantidad,codigoProducto,fecha,persona,nombreProducto,) VALUES ($cantidad,'$codigo','$fecha','$persona','$nombreProducto')";
     await _executeQuery(query);
@@ -149,10 +151,9 @@ class ConextionBD {
     await _executeQuery(query);
   }
 
-
   static Future<void> updateProducto(Producto producto) async {
     String query =
-        "UPDATE producto SET idGrupo = ${producto.idGrupo}, um = '${producto.um}', precioIndicidual = ${producto.precioIndividual}, cantidad = ${producto.cantidad}, nombre = '${producto.nombre}', nombrePersona = '${producto.nombrePersona}', fecha = '${producto.fecha}' precioPonderado = ${producto.precioPonderado} WHERE codigo = '${producto.codigo}'";
+        "UPDATE producto SET idGrupo = ${producto.idGrupo}, um = '${producto.um}', precioIndicidual = ${producto.precioIndividual}, cantidad = ${producto.cantidad}, nombre = '${producto.nombre}', nombrePersona = '${producto.nombrePersona}', fecha = '${producto.fecha}', precioPonderado = ${producto.precioPonderado}, tipo_de_cambio = ${producto.tipoDeCambio} WHERE codigo = '${producto.codigo}'";
     await _executeQuery(query);
   }
 
@@ -175,17 +176,19 @@ class ConextionBD {
           idGrupo: idGrupo,
           um: row.fields['um'],
           precioIndividual: row.fields['precioIndicidual'],
-          cantidad: row.fields['cantidad']);
+          cantidad: row.fields['cantidad'],
+          tipoDeCambio: row.fields['tipo_de_cambio'],
+          idPuntodeVenta: row.fields['id_tipo_de_venta']);
 
       resultados.add(p);
     }
     return resultados;
   }
 
-  static Future<void> addMovimietoDone(
-      String cdoigo, int cantidad, String tipoMovimiento,String destino) async {
+  static Future<void> addMovimietoDone(String cdoigo, int cantidad,
+      String tipoMovimiento, String destino) async {
     DateTime fecha = DateTime.now();
-     String formattedDate = DateFormat('dd/MM/yyyy').format(fecha);
+    String formattedDate = DateFormat('dd/MM/yyyy').format(fecha);
     String query =
         "INSERT INTO movimientosdone (cantidad,done,fecha,codigo,tipoMvimiento,destino) VALUES ($cantidad,0,'$formattedDate','$cdoigo','$tipoMovimiento','$destino')";
     await _executeQuery(query);
@@ -234,7 +237,7 @@ class ConextionBD {
           'SELECT moneda FROM tipodecambio WHERE idTipoDeCambio = ${row.fields['idMoneda']}');
 
       resultados.add(Modificacion(
-        persona: row.fields['persona'],
+          persona: row.fields['persona'],
           cambio: row.fields['cambio'],
           fecha: row.fields['fecha'],
           moneda: results2.first.fields['moneda']));
@@ -246,7 +249,6 @@ class ConextionBD {
     Results results = await _executeQuery('SELECT * FROM tipodecambio');
     List<Moneda> resultados = [];
     for (var row in results) {
-     
       resultados.add(Moneda(
           cambio: row.fields['cambio'],
           moneda: row.fields['moneda'],
@@ -335,23 +337,27 @@ class ConextionBD {
     await _executeQuery(query);
   }
 
-  static Future<List<Producto>> cargarEntradas()async {
-      List<Producto> movimientos=[];
-      String query="SELECT * FROM movimientoentrada";
-      Results results = await _executeQuery(query);
-      for (var movimientoentrada in results) {
-          movimientos.add(Producto(cantidad: movimientoentrada.fields['cantidad'],codigo: movimientoentrada.fields['codigoProducto'],fecha: movimientoentrada.fields['fecha'],nombre: movimientoentrada.fields['nombreProducto'],nombrePersona: movimientoentrada.fields['persona']));
-      }
-      return movimientos;
+  static Future<List<Producto>> cargarEntradas() async {
+    List<Producto> movimientos = [];
+    String query = "SELECT * FROM movimientoentrada";
+    Results results = await _executeQuery(query);
+    for (var movimientoentrada in results) {
+      movimientos.add(Producto(
+          cantidad: movimientoentrada.fields['cantidad'],
+          codigo: movimientoentrada.fields['codigoProducto'],
+          fecha: movimientoentrada.fields['fecha'],
+          nombre: movimientoentrada.fields['nombreProducto'],
+          nombrePersona: movimientoentrada.fields['persona']));
+    }
+    return movimientos;
   }
 
-  static getAllDestinos()async {
-     Results results = await _executeQuery('SELECT * FROM destino');
+  static getAllDestinos() async {
+    Results results = await _executeQuery('SELECT * FROM destino');
     List<String> resultados = [];
     for (var row in results) {
       resultados.add(row.fields['destino']);
     }
     return resultados;
   }
-  
 }

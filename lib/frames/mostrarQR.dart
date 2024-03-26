@@ -47,8 +47,9 @@ class _MostrarQRState extends State<MostrarQR> {
     await ConextionBD.actualizarExistencia(codigos);
     await _crearJson();
     await _notificar();
-    data='';
+    data = '';
   }
+
   _notificar() async {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -87,16 +88,21 @@ class _MostrarQRState extends State<MostrarQR> {
       ),
       body: Center(
           child: RefreshIndicator(
-            onRefresh: () async{
-              await _refrech();
-            }, 
-            child: ListView.builder(
-              itemCount: 1,
-                    itemBuilder: (context, index) {
-                     return Center(child: QRCodeW(qrData: data,qrSize: 500,),);
-                    },
-                  ),
-          )),
+        onRefresh: () async {
+          await _refrech();
+        },
+        child: ListView.builder(
+          itemCount: 1,
+          itemBuilder: (context, index) {
+            return Center(
+              child: QRCodeW(
+                qrData: data,
+                qrSize: 500,
+              ),
+            );
+          },
+        ),
+      )),
     );
   }
 }

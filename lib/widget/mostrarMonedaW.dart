@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/bd.dart';
 import 'package:flutter_application_1/models/moneda.dart';
+import 'package:flutter_application_1/widget/qr.dart';
+import 'package:path_provider/path_provider.dart';
 
 class MostrarMonedaW extends StatefulWidget {
   const MostrarMonedaW({super.key});
@@ -13,13 +18,29 @@ class _MostrarMonedaWState extends State<MostrarMonedaW> {
   List<Moneda> monedas = [];
   List<String> personas = [];
   String persona = '';
+  String monedasJson = "";
+
   _obtenerMonedas() async {
     List<Moneda> aux = await ConextionBD.getAlltiposMonedasClass();
     setState(() {
       monedas = aux;
     });
   }
-      _cargarPersonas() async {
+
+  _crearJson() async {
+    await _obtenerMonedas();
+    final directory = await getDownloadsDirectory();
+    final file = File('${directory?.path}/monedas.json');
+    final List<Map<String, dynamic>> x =
+        monedas.map((e) => e.toJson()).toList();
+    final jsonString = jsonEncode(x);
+    setState(() {
+      monedasJson = jsonString;
+    });
+    await file.writeAsString(jsonString);
+  }
+
+  _cargarPersonas() async {
     List<String> aux = await ConextionBD.getAllPersonas();
     setState(() {
       personas = aux;
@@ -34,6 +55,7 @@ class _MostrarMonedaWState extends State<MostrarMonedaW> {
           content: Text('Tipo de cambio modificado')),
     );
   }
+
   Future<void> _personas() async {
     String? newUnit = await showDialog<String>(
       context: context,
@@ -99,45 +121,45 @@ class _MostrarMonedaWState extends State<MostrarMonedaW> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-
                   TextFormField(
-              controller: textController,
-              validator: validateInput,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Ingrese el nuevo tipo de cambio',
-              ),
-            ), Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        value: persona,
-                        onChanged: (value) {
-                          setState(() {
-                            persona = value!;
-                          });
-                        },
-                        items: personas.map((item) {
-                          return DropdownMenuItem<String>(
-                            value: item,
-                            child: Text(item),
-                          );
-                        }).toList(),
-                        decoration: const InputDecoration(
-                          labelText: 'Persona que realiza el cambio',
-                          border: InputBorder.none,
+                    controller: textController,
+                    validator: validateInput,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Ingrese el nuevo tipo de cambio',
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: persona,
+                          onChanged: (value) {
+                            setState(() {
+                              persona = value!;
+                            });
+                          },
+                          items: personas.map((item) {
+                            return DropdownMenuItem<String>(
+                              value: item,
+                              child: Text(item),
+                            );
+                          }).toList(),
+                          decoration: const InputDecoration(
+                            labelText: 'Persona que realiza el cambio',
+                            border: InputBorder.none,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      onPressed: () {
-                        _personas();
-                      },
-                      icon: const Icon(Icons.add),
-                    ),
-                  ],
-                ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: () {
+                          _personas();
+                        },
+                        icon: const Icon(Icons.add),
+                      ),
+                    ],
+                  ),
                 ],
               )),
           actions: <Widget>[
@@ -154,7 +176,7 @@ class _MostrarMonedaWState extends State<MostrarMonedaW> {
                   final value = int.parse(textController.text);
                   await ConextionBD.insertModificacionTipoCambio(m);
                   await ConextionBD.updateTipoCambio(m, value);
-                  _obtenerMonedas();
+                  _crearJson();
                   _notificarModificacion();
                   Navigator.of(context).pop();
                 }
@@ -168,41 +190,70 @@ class _MostrarMonedaWState extends State<MostrarMonedaW> {
 
   @override
   void initState() {
-    _obtenerMonedas();
+    _crearJson();
     _cargarPersonas();
     super.initState();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: monedas.length,
-      itemBuilder: (context, index) {
-        return Card(
-          child: Column(
-            children: [
-              ListTile(
-                title: Text(monedas[index].moneda ?? '',
-                    style: const TextStyle(fontSize: 24)),
-                trailing: Text(
-                  'Tipo de cambio: \$${monedas[index].cambio ?? ''}',
-                  style: const TextStyle(fontSize: 24),
-                ),
-              ),
-              ButtonBar(
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      show(context, monedas[index]);
-                    },
-                    icon: const Icon(Icons.edit, size: 32),
-                  ),
-                ],
+  Future<void> QR() async {
+    await showDialog<String>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text("Actualizar tipos de cambio"),
+            content: QRCodeW(
+              qrData: monedasJson,
+              qrSize: 500,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(
+                      context); // Cerrar el diálogo sin agregar la unidad
+                },
+                child: const Text('Aceptar'),
               ),
             ],
-          ),
-        );
-      },
+          );
+        });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        child: Text("Actualizar"),
+        onPressed: () => QR(),
+      ),
+      body: ListView.builder(
+        itemCount: monedas.length,
+        itemBuilder: (context, index) {
+          return Card(
+            child: Column(
+              children: [
+                ListTile(
+                  title: Text(monedas[index].moneda ?? '',
+                      style: const TextStyle(fontSize: 24)),
+                  trailing: Text(
+                    'Tipo de cambio: \$${monedas[index].cambio ?? ''}',
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                ),
+                ButtonBar(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        show(context, monedas[index]);
+                      },
+                      icon: const Icon(Icons.edit, size: 32),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

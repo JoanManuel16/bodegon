@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_application_1/bd.dart';
 import 'package:flutter_application_1/models/Pproducto.dart';
+import 'package:flutter_application_1/models/moneda.dart';
 import 'package:intl/intl.dart';
 
 class AddProducto extends StatefulWidget {
@@ -17,20 +18,24 @@ class _MyAddProductoState extends State<AddProducto> {
   final _lettersController = TextEditingController();
   final _numbersController = TextEditingController();
   final _cantidadController = TextEditingController();
-  final _precioOriginalController = new TextEditingController();
-  final moneda = new TextEditingController();
+  final _precioOriginalController = TextEditingController();
+  final moneda = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   String _selectedItem = '';
   List<String> _items = [];
   String _slectedIteam1 = '';
+  Moneda _monedaItem = Moneda();
   List<String> _items1 = [];
   List<String> personas = [];
+  List<Moneda> monedas = [];
   String persona = '';
+  double monedaValue = 0.0;
   @override
   void initState() {
     _cargarUnidadesMedida();
     _cargarTipos();
     _cargarPersonas();
+    _cargarMonedas();
     super.initState();
   }
 
@@ -237,6 +242,14 @@ class _MyAddProductoState extends State<AddProducto> {
     });
   }
 
+  _cargarMonedas() async {
+    List<Moneda> aux = await ConextionBD.getAlltiposMonedasClass();
+    setState(() {
+      monedas = aux;
+      _monedaItem = monedas[0];
+    });
+  }
+
   _cargarTipos() async {
     List<String> aux = await ConextionBD.getAlltiposProducto();
     setState(() {
@@ -252,8 +265,6 @@ class _MyAddProductoState extends State<AddProducto> {
       persona = personas[0];
     });
   }
-
- 
 
   @override
   Widget build(BuildContext context) {
@@ -368,7 +379,7 @@ class _MyAddProductoState extends State<AddProducto> {
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
-                          decoration:const InputDecoration(
+                          decoration: const InputDecoration(
                             labelText: 'Precio de costo',
                             border: InputBorder.none,
                           ),
@@ -436,7 +447,6 @@ class _MyAddProductoState extends State<AddProducto> {
                       },
                       icon: const Icon(Icons.add),
                     ),
-                    
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -472,6 +482,31 @@ class _MyAddProductoState extends State<AddProducto> {
                   ],
                 ),
                 const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: monedaValue.toString(),
+                        onChanged: (value) {
+                          setState(() {
+                            monedaValue = double.parse(value!);
+                          });
+                        },
+                        items: monedas.map((item) {
+                          return DropdownMenuItem<String>(
+                            value: _monedaItem.moneda,
+                            child: Text(_monedaItem.moneda!),
+                          );
+                        }).toList(),
+                        decoration: const InputDecoration(
+                          labelText: 'Moneda',
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -480,19 +515,22 @@ class _MyAddProductoState extends State<AddProducto> {
                       String formattedDate =
                           DateFormat('dd/MM/yyyy').format(dt);
                       if (_formKey.currentState!.validate()) {
-                        double precioPonderadoC = double.parse(_numbersController.text)*int.parse(_cantidadController.text)/int.parse(_cantidadController.text);
+                        double precioPonderadoC =
+                            double.parse(_numbersController.text) *
+                                int.parse(_cantidadController.text) /
+                                int.parse(_cantidadController.text);
                         await ConextionBD.insertProducto(Producto(
-                          nombrePersona: persona,
-                          fecha: formattedDate,
-                          precioPonderado: precioPonderadoC,
-                          nombre: _lettersController.text,
-                          codigo: _codeController.text,
-                          idGrupo: _items1.indexOf(_slectedIteam1) + 1,
-                          um: _selectedItem,
-                          precioIndividual:
-                              double.parse(_numbersController.text),
-                          cantidad: int.parse(_cantidadController.text),
-                        ));
+                            nombrePersona: persona,
+                            fecha: formattedDate,
+                            precioPonderado: precioPonderadoC,
+                            nombre: _lettersController.text,
+                            codigo: _codeController.text,
+                            idGrupo: _items1.indexOf(_slectedIteam1) + 1,
+                            um: _selectedItem,
+                            precioIndividual:
+                                double.parse(_numbersController.text),
+                            cantidad: int.parse(_cantidadController.text),
+                            tipoDeCambio: _monedaItem.cambio));
                         await ConextionBD.insertMovimientoEntrada(
                             formattedDate,
                             int.parse(_cantidadController.text),
