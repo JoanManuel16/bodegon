@@ -30,12 +30,15 @@ class _MyAddProductoState extends State<AddProducto> {
   List<Moneda> monedas = [];
   String persona = '';
   double monedaValue = 0.0;
+  String puntoDeVenta = "";
+  List<String> _puntosDeVenta = [];
   @override
   void initState() {
     _cargarUnidadesMedida();
     _cargarTipos();
     _cargarPersonas();
     _cargarMonedas();
+    _cargarPuntosDeVenta();
     super.initState();
   }
 
@@ -239,6 +242,14 @@ class _MyAddProductoState extends State<AddProducto> {
     setState(() {
       _items = aux;
       _selectedItem = _items[0];
+    });
+  }
+
+  _cargarPuntosDeVenta() async {
+    List<String> aux = await ConextionBD.getPuntosDeVenta();
+    setState(() {
+      _puntosDeVenta = aux;
+      puntoDeVenta = _puntosDeVenta[0];
     });
   }
 
@@ -494,12 +505,37 @@ class _MyAddProductoState extends State<AddProducto> {
                         },
                         items: monedas.map((item) {
                           return DropdownMenuItem<String>(
-                            value: _monedaItem.moneda,
-                            child: Text(_monedaItem.moneda!),
+                            value: item.moneda,
+                            child: Text(item.moneda!),
                           );
                         }).toList(),
                         decoration: const InputDecoration(
                           labelText: 'Moneda',
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: puntoDeVenta,
+                        onChanged: (value) {
+                          setState(() {
+                            puntoDeVenta = value!;
+                          });
+                        },
+                        items: _puntosDeVenta.map((item) {
+                          return DropdownMenuItem<String>(
+                            value: item,
+                            child: Text(item),
+                          );
+                        }).toList(),
+                        decoration: const InputDecoration(
+                          labelText: 'Punto de venta',
                           border: InputBorder.none,
                         ),
                       ),
@@ -530,7 +566,9 @@ class _MyAddProductoState extends State<AddProducto> {
                             precioIndividual:
                                 double.parse(_numbersController.text),
                             cantidad: int.parse(_cantidadController.text),
-                            tipoDeCambio: _monedaItem.cambio));
+                            tipoDeCambio: _monedaItem.cambio,
+                            idPuntodeVenta: int.parse(
+                                puntoDeVenta[puntoDeVenta.length - 1])));
                         await ConextionBD.insertMovimientoEntrada(
                             formattedDate,
                             int.parse(_cantidadController.text),
@@ -538,7 +576,7 @@ class _MyAddProductoState extends State<AddProducto> {
                             persona,
                             _lettersController.text);
                         _notificarInsercion(
-                            'Producto agregado correctamnete', Colors.green);
+                            'Producto agregado correctamente', Colors.green);
                         _codeController.text = '';
                         _lettersController.text = '';
                         _numbersController.text = '';

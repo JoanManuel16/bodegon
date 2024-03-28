@@ -195,7 +195,7 @@ class _MostrarMonedaWState extends State<MostrarMonedaW> {
     super.initState();
   }
 
-  Future<void> QR() async {
+  Future<void> qr() async {
     await showDialog<String>(
         context: context,
         builder: (context) {
@@ -222,8 +222,8 @@ class _MostrarMonedaWState extends State<MostrarMonedaW> {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        child: Text("Actualizar"),
-        onPressed: () => QR(),
+        child: const Text("Actualizar"),
+        onPressed: () => qr(),
       ),
       body: ListView.builder(
         itemCount: monedas.length,

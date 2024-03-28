@@ -360,4 +360,14 @@ class ConextionBD {
     }
     return resultados;
   }
+
+  static Future<List<String>> getPuntosDeVenta() async {
+    String query = "SELECT * FROM punto_de_venta";
+    Results results = await _executeQuery(query);
+    List<String> res = [];
+    for (var element in results) {
+      res.add(element.fields['nombre_punto_de_venta']);
+    }
+    return res;
+  }
 }
