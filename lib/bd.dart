@@ -127,14 +127,15 @@ class ConextionBD {
 //--------------------------------------Consultas de los productos--------------------------
   static Future<void> insertProducto(Producto producto) async {
     String query =
-        "INSERT INTO producto (codigo,idGrupo,um,precioIndicidual,cantidad,nombre,nombrePersona,fecha,precioPonderado, id_punto_de_venta, tipo_de_cambio) VALUES ('${producto.codigo}',${producto.idGrupo},'${producto.um}',${producto.precioIndividual},${producto.cantidad},'${producto.nombre}','${producto.nombrePersona}','${producto.fecha}',${producto.precioPonderado}, ${producto.idPuntodeVenta}, ${producto.tipoDeCambio})";
+        "INSERT INTO producto (codigo,idGrupo,um,precioIndicidual,cantidad,nombre,nombrePersona,fecha,precioPonderado,id_punto_de_venta,tipo_de_cambio) VALUES ('${producto.codigo}',${producto.idGrupo},'${producto.um}',${producto.precioIndividual},${producto.cantidad},'${producto.nombre}','${producto.nombrePersona}','${producto.fecha}',${producto.precioPonderado}, ${producto.idPuntodeVenta}, ${producto.tipoDeCambio})";
     await _executeQuery(query);
   }
 
+//Hay un error en esta consulta que no entiendo cual es
   static Future<void> insertMovimientoEntrada(String fecha, int cantidad,
       String codigo, String persona, String nombreProducto) async {
     String query =
-        "INSERT INTO movimientoentrada (cantidad,codigoProducto,fecha,persona,nombreProducto,) VALUES ($cantidad,'$codigo','$fecha','$persona','$nombreProducto')";
+        "INSERT INTO movimientoentrada (cantidad,codigoProducto,fecha,persona,nombreProducto) VALUES ($cantidad,'$codigo','$fecha','$persona','$nombreProducto')";
     await _executeQuery(query);
   }
 
@@ -366,7 +367,7 @@ class ConextionBD {
     Results results = await _executeQuery(query);
     List<String> res = [];
     for (var element in results) {
-      res.add(element.fields['nombre_punto_de_venta']);
+      res.add(element.fields['nombre_punto_de_venta'].toString());
     }
     return res;
   }

@@ -20,18 +20,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        primarySwatch: Colors.deepPurple
-       ),
+      theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          primarySwatch: Colors.deepPurple),
       debugShowCheckedModeBanner: false,
-      title: "EsculTunas",
+      title: "Bodegon",
       initialRoute: "/",
       routes: {
-        "/": (context) =>  Principal(),
-        "/addProducto": (context) =>  const  AddProducto(),
-         "/mostarProductos": (context) => const MostrarProductos(),
-        "/editarProducto": (context) =>  EditarProducto(),
+        "/": (context) => Principal(),
+        "/addProducto": (context) => const AddProducto(),
+        "/mostarProductos": (context) => const MostrarProductos(),
+        "/editarProducto": (context) => EditarProducto(),
         "/mostrarMoneda": (context) => const MostarMonedas(),
         "/mostarMod": (context) => const MostrarModificaciones(),
         "/revision10": (context) => const RevisioDel10(),
@@ -39,8 +38,6 @@ class MyApp extends StatelessWidget {
         "/mostrarMovimiento": (context) => const MostrarMovimietos(),
         "/mostrarEntrada": (context) => const MostrarEntrada(),
       },
-    
     );
-}
-
+  }
 }

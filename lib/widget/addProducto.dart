@@ -32,6 +32,8 @@ class _MyAddProductoState extends State<AddProducto> {
   double monedaValue = 0.0;
   String puntoDeVenta = "";
   List<String> _puntosDeVenta = [];
+
+  Map<String, Moneda> mapa = {};
   @override
   void initState() {
     _cargarUnidadesMedida();
@@ -258,6 +260,12 @@ class _MyAddProductoState extends State<AddProducto> {
     setState(() {
       monedas = aux;
       _monedaItem = monedas[0];
+      monedaValue = _monedaItem.cambio!;
+      mapa.clear();
+
+      for (int i = 0; i < monedas.length; i++) {
+        mapa.addAll({monedas[i].moneda!: monedas[i]});
+      }
     });
   }
 
@@ -497,10 +505,11 @@ class _MyAddProductoState extends State<AddProducto> {
                   children: [
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        value: monedaValue.toString(),
+                        value: _monedaItem.moneda,
                         onChanged: (value) {
                           setState(() {
-                            monedaValue = double.parse(value!);
+                            _monedaItem = mapa[value]!;
+                            monedaValue = _monedaItem.cambio!;
                           });
                         },
                         items: monedas.map((item) {
@@ -566,7 +575,7 @@ class _MyAddProductoState extends State<AddProducto> {
                             precioIndividual:
                                 double.parse(_numbersController.text),
                             cantidad: int.parse(_cantidadController.text),
-                            tipoDeCambio: _monedaItem.cambio,
+                            tipoDeCambio: monedaValue,
                             idPuntodeVenta: int.parse(
                                 puntoDeVenta[puntoDeVenta.length - 1])));
                         await ConextionBD.insertMovimientoEntrada(
