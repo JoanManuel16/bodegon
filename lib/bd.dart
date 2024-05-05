@@ -217,10 +217,11 @@ class ConextionBD {
     return resultados;
   }
 
-  static Future<void> insertModificacionTipoCambio(Moneda m) async {
+  static Future<void> insertModificacionTipoCambio(Moneda m,String persona) async {
     DateTime d = DateTime.now();
+  String formattedDate = DateFormat('dd/MM/yyyy').format(d);
     String query =
-        "INSERT INTO modtcambio (idMoneda,fecha,cambio)  VALUES ('${m.idTipoCambio}','${d.toString()},${m.cambio}',${m.cambio})";
+        "INSERT INTO modtcambio (idMoneda,fecha,cambio,persona)  VALUES ('${m.idTipoCambio}','$formattedDate,${m.cambio}',${m.cambio},'$persona')";
     await _executeQuery(query);
   }
 

@@ -174,7 +174,7 @@ class _MostrarMonedaWState extends State<MostrarMonedaW> {
               onPressed: () async {
                 if (formKey.currentState!.validate()) {
                   final value = int.parse(textController.text);
-                  await ConextionBD.insertModificacionTipoCambio(m);
+                  await ConextionBD.insertModificacionTipoCambio(m,persona);
                   await ConextionBD.updateTipoCambio(m, value);
                   _crearJson();
                   _notificarModificacion();
@@ -196,24 +196,19 @@ class _MostrarMonedaWState extends State<MostrarMonedaW> {
   }
 
   Future<void> qr() async {
-    await showDialog<String>(
+    await showDialog(
         context: context,
         builder: (context) {
-          return AlertDialog(
-            title: const Text("Actualizar tipos de cambio"),
-            content: QRCodeW(
-              qrData: monedasJson,
-              qrSize: 500,
+          return Dialog(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                QRCodeW(
+                  qrData: monedasJson,
+                  qrSize: 500,
+                )
+              ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(
-                      context); // Cerrar el diálogo sin agregar la unidad
-                },
-                child: const Text('Aceptar'),
-              ),
-            ],
           );
         });
   }
@@ -221,9 +216,15 @@ class _MostrarMonedaWState extends State<MostrarMonedaW> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        child: const Text("Actualizar"),
-        onPressed: () => qr(),
+      floatingActionButton: FloatingActionButton.extended(
+        label: const Text("Actualizar", style: TextStyle(fontSize: 24)),
+        icon: const Icon(
+          Icons.update_rounded,
+          size: 30,
+        ),
+        onPressed: () {
+          qr();
+        },
       ),
       body: ListView.builder(
         itemCount: monedas.length,

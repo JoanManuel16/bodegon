@@ -11,11 +11,13 @@ class MostrarModificacionesW extends StatefulWidget {
 
 class _MostrarModificacionesWState extends State<MostrarModificacionesW> {
   List<Modificacion> modificaciones = [];
-
+TextEditingController _searchController = TextEditingController();
+ List<Modificacion> _productosFiltrados = [];
   _obtenerModificaicones() async {
     List<Modificacion> aux = await ConextionBD.getAlltiposMOdificaciones();
     setState(() {
       modificaciones = aux;
+      _productosFiltrados=aux;
     });
   }
 
@@ -24,28 +26,65 @@ class _MostrarModificacionesWState extends State<MostrarModificacionesW> {
     _obtenerModificaicones();
     super.initState();
   }
+ void _filtrarProductos(String query) {
+    List<Modificacion> filtrados = modificaciones.where((producto) {
+      final fecha = producto.fecha?.toLowerCase() ?? '';
+      final moneda = producto.moneda?.toLowerCase() ?? '';
+      final persona = producto.persona?.toLowerCase() ?? '';
+      return fecha.contains(query.toLowerCase()) ||
+          moneda.contains(query.toLowerCase()) ||
+          persona.contains(query.toLowerCase());
+    }).toList();
 
+    setState(() {
+      _productosFiltrados = filtrados;
+    });
+  }
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: modificaciones.length,
-      itemBuilder: (context, index) {
-        return Card(child: Column(
-          children: [ListTile(
-          title: Text('${modificaciones[index].moneda}\nResponsable:${modificaciones[index].persona}',
-              style: const TextStyle(fontSize: 24)),
-          trailing: Text(
-            '\$ ${modificaciones[index].cambio}',
-            style: const TextStyle(fontSize: 24),
+    return Column(
+  children: [
+     Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                _filtrarProductos(value);
+              },
+              decoration: const InputDecoration(
+                labelText: 'Buscar',
+              ),
+            ),
           ),
-          subtitle: Text(
-            'Fecha de modificacion ${modificaciones[index].fecha}',
-            style: const TextStyle(fontSize: 24),
-          ),
-          
-        )],
-        ),);
-      },
-    );
+    Expanded(
+      child: ListView.builder(
+        itemCount: _productosFiltrados.length,
+        itemBuilder: (context, index) {
+          return Card(
+            child: Column(
+              children: [
+                ListTile(
+                  title: Text(
+                    '${_productosFiltrados[index].moneda}\nResponsable:${_productosFiltrados[index].persona}',
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                  trailing: Text(
+                    '\$ ${_productosFiltrados[index].cambio}',
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                  subtitle: Text(
+                    'Fecha de modificacion ${_productosFiltrados[index].fecha}',
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    ),
+  ],
+);
+
   }
 }

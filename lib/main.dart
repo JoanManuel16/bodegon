@@ -5,6 +5,7 @@ import 'package:flutter_application_1/frames/mostrarModificacoines.dart';
 import 'package:flutter_application_1/frames/mostrarMonedas.dart';
 import 'package:flutter_application_1/frames/mostrarMovimientos.dart';
 import 'package:flutter_application_1/frames/mostrarProductos.dart';
+import 'package:flutter_application_1/frames/mostrarQR.dart';
 import 'package:flutter_application_1/frames/movimietno.dart';
 import 'package:flutter_application_1/frames/principal.dart';
 import 'package:flutter_application_1/frames/revisiondel10.dart';
@@ -37,6 +38,7 @@ class MyApp extends StatelessWidget {
         "/addMovimiento": (context) => const Movimiento(),
         "/mostrarMovimiento": (context) => const MostrarMovimietos(),
         "/mostrarEntrada": (context) => const MostrarEntrada(),
+        "/qr": (context) => const MostrarQR(),
       },
     );
   }
