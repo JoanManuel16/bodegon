@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/bd.dart';
 import 'package:flutter_application_1/models/Pproducto.dart';
+import 'package:flutter_application_1/models/product_to_send_model.dart';
 import 'package:flutter_application_1/widget/qr.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -15,7 +16,7 @@ class MostrarQR extends StatefulWidget {
 }
 
 class _MostrarQRState extends State<MostrarQR> {
-  List<Producto> _productos = [];
+  List<ProductToSendModel> _productos = [];
   String data = '';
 
   Future<void> _refrech() async {
@@ -24,7 +25,8 @@ class _MostrarQRState extends State<MostrarQR> {
   }
 
   _cargarProductos() async {
-    List<Producto> aux = await ConextionBD.getAllMovimietnoByCodigo(0);
+    List<ProductToSendModel> aux =
+        await ConextionBD.getAllMovimietnoByCodigo(0);
     setState(() {
       _productos = aux;
     });
@@ -61,8 +63,8 @@ class _MostrarQRState extends State<MostrarQR> {
     await _cargarProductos();
     final directory = await getDownloadsDirectory();
     final file = File('${directory?.path}/productos.json');
-    final List<Map<String, dynamic>> x =
-        _productos.map((e) => e.toJson()).toList();
+    final List<Map<String, dynamic>> x = List.generate(
+        _productos.length, (i) => _productos[i].toJsonWithDestiny());
     final jsonString = jsonEncode(x);
     setState(() {
       data = jsonString;

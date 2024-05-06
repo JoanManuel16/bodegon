@@ -10,8 +10,6 @@ class Producto {
   String? fecha;
   int? cantidadRest;
   double? precioPonderado;
-  int? idPuntodeVenta;
-  double? tipoDeCambio;
 
   Producto(
       {this.precioPonderado,
@@ -24,9 +22,7 @@ class Producto {
       this.idGrupo,
       this.um,
       this.precioIndividual,
-      this.cantidad,
-      this.idPuntodeVenta,
-      this.tipoDeCambio});
+      this.cantidad});
 
   Map<String, dynamic> toJson() {
     return {
@@ -38,9 +34,7 @@ class Producto {
       'cantidad': cantidad,
       'nombre': nombre,
       'nombrePersona': nombrePersona,
-      'fecha': fecha,
-      'id_punto_venta': idPuntodeVenta,
-      'tipo_de_cambio': tipoDeCambio
+      'fecha': fecha
     };
   }
 }
