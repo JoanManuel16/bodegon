@@ -4,6 +4,7 @@ import 'package:flutter_application_1/models/Pproducto.dart';
 import 'package:flutter_application_1/models/modificaion.dart';
 import 'package:flutter_application_1/models/moneda.dart';
 import 'package:flutter_application_1/models/moviemientoToDo.dart';
+import 'package:flutter_application_1/models/product_to_send_model.dart';
 import 'package:intl/intl.dart';
 import 'package:mysql1/mysql1.dart';
 
@@ -127,7 +128,7 @@ class ConextionBD {
 //--------------------------------------Consultas de los productos--------------------------
   static Future<void> insertProducto(Producto producto) async {
     String query =
-        "INSERT INTO producto (codigo,idGrupo,um,precioIndicidual,cantidad,nombre,nombrePersona,fecha,precioPonderado,id_punto_de_venta,tipo_de_cambio) VALUES ('${producto.codigo}',${producto.idGrupo},'${producto.um}',${producto.precioIndividual},${producto.cantidad},'${producto.nombre}','${producto.nombrePersona}','${producto.fecha}',${producto.precioPonderado}, ${producto.idPuntodeVenta}, ${producto.tipoDeCambio})";
+        "INSERT INTO producto (codigo,idGrupo,um,precioIndicidual,cantidad,nombre,nombrePersona,fecha,precioPonderado,id_punto_de_venta,tipo_de_cambio) VALUES ('${producto.codigo}',${producto.idGrupo},'${producto.um}',${producto.precioIndividual},${producto.cantidad},'${producto.nombre}','${producto.nombrePersona}','${producto.fecha}',${producto.precioPonderado})";
     await _executeQuery(query);
   }
 
@@ -154,7 +155,7 @@ class ConextionBD {
 
   static Future<void> updateProducto(Producto producto) async {
     String query =
-        "UPDATE producto SET idGrupo = ${producto.idGrupo}, um = '${producto.um}', precioIndicidual = ${producto.precioIndividual}, cantidad = ${producto.cantidad}, nombre = '${producto.nombre}', nombrePersona = '${producto.nombrePersona}', fecha = '${producto.fecha}', precioPonderado = ${producto.precioPonderado}, tipo_de_cambio = ${producto.tipoDeCambio} WHERE codigo = '${producto.codigo}'";
+        "UPDATE producto SET idGrupo = ${producto.idGrupo}, um = '${producto.um}', precioIndicidual = ${producto.precioIndividual}, cantidad = ${producto.cantidad}, nombre = '${producto.nombre}', nombrePersona = '${producto.nombrePersona}', fecha = '${producto.fecha}', precioPonderado = ${producto.precioPonderado} WHERE codigo = '${producto.codigo}'";
     await _executeQuery(query);
   }
 
@@ -177,9 +178,26 @@ class ConextionBD {
           idGrupo: idGrupo,
           um: row.fields['um'],
           precioIndividual: row.fields['precioIndicidual'],
+          cantidad: row.fields['cantidad']);
+
+      resultados.add(p);
+    }
+    return resultados;
+  }
+
+  static Future<List<MovimientoToDo>> getAllMovsByType(String mov) async {
+    Results results = await _executeQuery(
+        "SELECT * FROM movimientosdone WHERE tipoMvimiento = '$mov' ");
+    List<MovimientoToDo> resultados = [];
+    for (var row in results) {
+      MovimientoToDo p = MovimientoToDo(
           cantidad: row.fields['cantidad'],
-          tipoDeCambio: row.fields['tipo_de_cambio'],
-          idPuntodeVenta: row.fields['id_tipo_de_venta']);
+          codigo: row.fields['codigo'],
+          destino: row.fields['destino'],
+          done: row.fields['done'] == 0,
+          fecha: row.fields['fecha'],
+          idMovimientoDone: row.fields['idMovimientoDone'],
+          tipoMovimiento: row.fields['tipoMvimiento']);
 
       resultados.add(p);
     }
@@ -217,9 +235,10 @@ class ConextionBD {
     return resultados;
   }
 
-  static Future<void> insertModificacionTipoCambio(Moneda m,String persona) async {
+  static Future<void> insertModificacionTipoCambio(
+      Moneda m, String persona) async {
     DateTime d = DateTime.now();
-  String formattedDate = DateFormat('dd/MM/yyyy').format(d);
+    String formattedDate = DateFormat('dd/MM/yyyy').format(d);
     String query =
         "INSERT INTO modtcambio (idMoneda,fecha,cambio,persona)  VALUES ('${m.idTipoCambio}','$formattedDate,${m.cambio}',${m.cambio},'$persona')";
     await _executeQuery(query);
@@ -286,26 +305,29 @@ class ConextionBD {
     return tiposMovimiento;
   }
 
-  static Future<List<Producto>> getAllMovimietnoByCodigo(int bool) async {
+  static Future<List<ProductToSendModel>> getAllMovimietnoByCodigo(
+      int bool) async {
     List<MovimientoToDo> mvoimientosToDo = await getAllMovimeintoToDo(bool);
-    List<Producto> producto = [];
+    List<ProductToSendModel> producto = [];
     for (var element1 in mvoimientosToDo) {
       String query = "SELECT * FROM producto WHERE codigo='${element1.codigo}'";
       Results results = await _executeQuery(query);
       for (var element in results) {
-        producto.add(Producto(
-            fecha: element.fields['fecha'],
-            nombrePersona: element.fields['nombrePersona'],
-            nombre:
-                '${element.fields['nombre']}\nTipo de Movimiento: ${element1.tipoMovimiento}\nDestino: ${element1.destino}',
-            codigo: element1.codigo,
-            idGrupo: element.fields['idGrupo'],
-            um: element.fields['um'],
-            precioIndividual: element.fields['precioIndicidual'],
-            cantidad: element1.cantidad,
-            cantidadRest: bool == 0
-                ? element.fields['cantidad'] - element1.cantidad
-                : element.fields['cantidad']));
+        producto.add(ProductToSendModel.fromProduct(
+            Producto(
+                fecha: element.fields['fecha'],
+                nombrePersona: element.fields['nombrePersona'],
+                nombre:
+                    '${element.fields['nombre']}\nTipo de Movimiento: ${element1.tipoMovimiento}\nDestino: ${element1.destino}',
+                codigo: element1.codigo,
+                idGrupo: element.fields['idGrupo'],
+                um: element.fields['um'],
+                precioIndividual: element.fields['precioIndicidual'],
+                cantidad: element1.cantidad,
+                cantidadRest: bool == 0
+                    ? element.fields['cantidad'] - element1.cantidad
+                    : element.fields['cantidad']),
+            element1.destino!));
       }
     }
     return producto;
