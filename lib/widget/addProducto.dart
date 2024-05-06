@@ -31,7 +31,6 @@ class _MyAddProductoState extends State<AddProducto> {
   String persona = '';
   double monedaValue = 0.0;
   String puntoDeVenta = "";
-  List<String> _puntosDeVenta = [];
 
   Map<String, Moneda> mapa = {};
   @override
@@ -40,7 +39,6 @@ class _MyAddProductoState extends State<AddProducto> {
     _cargarTipos();
     _cargarPersonas();
     _cargarMonedas();
-    _cargarPuntosDeVenta();
     super.initState();
   }
 
@@ -244,14 +242,6 @@ class _MyAddProductoState extends State<AddProducto> {
     setState(() {
       _items = aux;
       _selectedItem = _items[0];
-    });
-  }
-
-  _cargarPuntosDeVenta() async {
-    List<String> aux = await ConextionBD.getPuntosDeVenta();
-    setState(() {
-      _puntosDeVenta = aux;
-      puntoDeVenta = _puntosDeVenta[0];
     });
   }
 
@@ -500,7 +490,7 @@ class _MyAddProductoState extends State<AddProducto> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                /*        const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
@@ -550,7 +540,7 @@ class _MyAddProductoState extends State<AddProducto> {
                       ),
                     ),
                   ],
-                ),
+                ),*/
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
@@ -574,10 +564,7 @@ class _MyAddProductoState extends State<AddProducto> {
                             um: _selectedItem,
                             precioIndividual:
                                 double.parse(_numbersController.text),
-                            cantidad: int.parse(_cantidadController.text),
-                            tipoDeCambio: monedaValue,
-                            idPuntodeVenta: int.parse(
-                                puntoDeVenta[puntoDeVenta.length - 1])));
+                            cantidad: int.parse(_cantidadController.text)));
                         await ConextionBD.insertMovimientoEntrada(
                             formattedDate,
                             int.parse(_cantidadController.text),
