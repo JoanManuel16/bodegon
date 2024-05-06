@@ -60,12 +60,18 @@ class _MostrarQRState extends State<MostrarQR> {
   }
 
   _crearJson() async {
-    await _cargarProductos();
     final directory = await getDownloadsDirectory();
-    final file = File('${directory?.path}/productos.json');
+    final File file;
+    if (Platform.isAndroid || Platform.isWindows) {
+      file = File('${directory?.path}/productos.json');
+    } else {
+      file = File(
+          '${Directory('${(await getApplicationCacheDirectory()).path}/../..').uri.path}productos.json');
+    }
     final List<Map<String, dynamic>> x = List.generate(
         _productos.length, (i) => _productos[i].toJsonWithDestiny());
     final jsonString = jsonEncode(x);
+    //print(jsonString);
     setState(() {
       data = jsonString;
     });
