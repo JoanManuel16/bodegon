@@ -17,8 +17,8 @@ class _MovimietnoWState extends State<MovimietnoW> {
   List<String> _dropdownItems = [];
   String _selectedIteam2 = '';
   List<String> _dropdownItems2 = [];
-  String _destino = '';
-  List<String> _destinoList = [];
+  String puntoDeVenta = '';
+  List<String> _puntosDeVenta = [];
   TextEditingController searchController = TextEditingController();
   TextEditingController dialogController = TextEditingController();
   List<Producto> prodctoSeleccionado = [];
@@ -45,13 +45,15 @@ class _MovimietnoWState extends State<MovimietnoW> {
       _selectedIteam2 = _dropdownItems2[0];
     });
   }
- _cargarDestinos() async {
-    List<String> aux = await ConextionBD.getAllDestinos();
+
+  _cargarPuntosDeVenta() async {
+    List<String> aux = await ConextionBD.getPuntosDeVenta();
     setState(() {
-      _destinoList = aux;
-      _destino = _destinoList[0];
+      _puntosDeVenta = aux;
+      puntoDeVenta = _puntosDeVenta[0];
     });
   }
+
   Future<void> _refrech() async {
     await Future.delayed(Duration(seconds: 1));
     await _cargarProductosByGrupo(_dropdownItems.indexOf(_selectedItem) + 1);
@@ -180,11 +182,9 @@ class _MovimietnoWState extends State<MovimietnoW> {
     );
   }
 
-  void _notificar(String texto,Color) {
+  void _notificar(String texto, Color) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          backgroundColor: Color,
-          content: Text(texto)),
+      SnackBar(backgroundColor: Color, content: Text(texto)),
     );
   }
 
@@ -193,7 +193,7 @@ class _MovimietnoWState extends State<MovimietnoW> {
     _cargarTipos();
     _cargarProductosByGrupo(1);
     _cargarTiposMovimiento();
-    _cargarDestinos();
+    _cargarPuntosDeVenta();
     super.initState();
   }
 
@@ -201,7 +201,6 @@ class _MovimietnoWState extends State<MovimietnoW> {
     await ConextionBD.agregarTipoMovimiento(tipoMovimiento);
   }
 
- 
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -227,24 +226,24 @@ class _MovimietnoWState extends State<MovimietnoW> {
             ),
           ),
         ),
-         Padding(
+        Padding(
           padding: const EdgeInsets.all(8.0),
           child: DropdownButtonFormField<String>(
-            value: _destino,
+            value: puntoDeVenta,
             onChanged: (value) {
               setState(() {
-                _selectedItem = value!;
-                _cargarProductosByGrupo(_dropdownItems.indexOf(value) + 1);
+                puntoDeVenta = value!;
               });
             },
-            items: _destinoList.map((item) {
+            items: _puntosDeVenta.map((item) {
               return DropdownMenuItem<String>(
                 value: item,
                 child: Text(item),
               );
             }).toList(),
             decoration: const InputDecoration(
-              labelText: 'Destino',
+              labelText: 'Punto de venta',
+              border: InputBorder.none,
             ),
           ),
         ),
@@ -272,7 +271,7 @@ class _MovimietnoWState extends State<MovimietnoW> {
                   ),
                 ),
                 IconButton(
-                    onPressed: ()async {
+                    onPressed: () async {
                       await _agregarTipoDeCambio(context);
                     },
                     icon: Icon(Icons.add))
@@ -308,8 +307,12 @@ class _MovimietnoWState extends State<MovimietnoW> {
                       int? ccantidad =
                           await _showNumberDialog(context, producto.cantidad);
                       await ConextionBD.addMovimietoDone(
-                          codigo!, ccantidad!, _selectedIteam2,_destino);
-                      _notificar('Producto agregado a la lista',Colors.green);
+                          codigo!, ccantidad!, _selectedIteam2, puntoDeVenta);
+                      _notificar('Producto agregado a la lista', Colors.green);
+                      setState(() {
+                        _productosFiltrados[index].cantidad =
+                            _productosFiltrados[index].cantidad! - ccantidad;
+                      });
                     },
                     child: Card(
                       child: Column(

@@ -1,7 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/bd.dart';
 import 'package:flutter_application_1/models/Pproducto.dart';
+import 'package:flutter_application_1/models/moviemientoToDo.dart';
+
 class MovimientosDoneW extends StatefulWidget {
   const MovimientosDoneW({super.key});
 
@@ -10,52 +11,86 @@ class MovimientosDoneW extends StatefulWidget {
 }
 
 class _MovimientosDoneWState extends State<MovimientosDoneW> {
-  List<Producto> _productos = [];
-  List<Producto> _productosFiltrados = [];
+  List<MovimientoToDo> _movimientos = [];
+  List<MovimientoToDo> _movimientosFiltrados = [];
   TextEditingController _searchController = TextEditingController();
+  List<String> _dropdownItems2 = [];
+  String _selectedIteam2 = "";
 
-  _cargarProductos() async {
-    List<Producto> aux = await ConextionBD.getAllMovimietnoByCodigo(0);
+  _cargarMovimientos(String mov) async {
+    List<MovimientoToDo> aux = await ConextionBD.getAllMovsByType(mov);
     setState(() {
-      _productos = aux;
-      _productosFiltrados = aux;
+      _movimientos = aux;
+      _movimientosFiltrados = aux;
     });
   }
-  
+
+  _cargarTiposMovimiento() async {
+    List<String> aux = await ConextionBD.getAllTiposMovimientos();
+    setState(() {
+      _dropdownItems2 = aux;
+      _selectedIteam2 = _dropdownItems2[0];
+    });
+  }
 
   void _filtrarProductos(String query) {
-    List<Producto> filtrados = _productos.where((producto) {
-      final nombre = producto.nombre?.toLowerCase() ?? '';
-      final codigo = producto.codigo?.toLowerCase() ?? '';
-      final um = producto.um?.toLowerCase() ?? '';
+    List<MovimientoToDo> filtrados = _movimientos.where((movimiento) {
+      final nombre = movimiento.destino?.toLowerCase() ?? '';
+      final codigo = movimiento.codigo?.toLowerCase() ?? '';
+      final fecha = movimiento.fecha ?? '';
       return nombre.contains(query.toLowerCase()) ||
           codigo.contains(query.toLowerCase()) ||
-          um.contains(query.toLowerCase());
+          fecha.contains(query.toLowerCase());
     }).toList();
 
     setState(() {
-      _productosFiltrados = filtrados;
+      _movimientosFiltrados = filtrados;
     });
   }
 
   @override
   void initState() {
     super.initState();
-    _cargarProductos();
+    _cargarMovimientos("yuca");
+    _cargarTiposMovimiento();
   }
 
   Future<void> _refrech() async {
     await Future.delayed(Duration(seconds: 1));
-    await _cargarProductos();
+    await _cargarMovimientos("yuca");
   }
-
-  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: [
+          Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedIteam2,
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedIteam2 = value!;
+                          _cargarMovimientos(_selectedIteam2);
+                        });
+                      },
+                      items: _dropdownItems2.map((item) {
+                        return DropdownMenuItem<String>(
+                          value: item,
+                          child: Text(item),
+                        );
+                      }).toList(),
+                      decoration: const InputDecoration(
+                        labelText: 'Tipo de Movimiento',
+                      ),
+                    ),
+                  ),
+                ],
+              )),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
@@ -74,10 +109,10 @@ class _MovimientosDoneWState extends State<MovimientosDoneW> {
               child: RefreshIndicator(
                 onRefresh: _refrech,
                 child: ListView.builder(
-                  itemCount: _productosFiltrados.length,
+                  itemCount: _movimientosFiltrados.length,
                   itemBuilder: (context, index) {
-                    Producto producto = _productosFiltrados[index];
-                    if (_productosFiltrados.isEmpty) {
+                    MovimientoToDo producto = _movimientosFiltrados[index];
+                    if (_movimientosFiltrados.isEmpty) {
                       return const Icon(Icons.inventory_2_outlined);
                     }
                     return InkWell(
@@ -87,12 +122,12 @@ class _MovimientosDoneWState extends State<MovimientosDoneW> {
                         child: Column(
                           children: [
                             ListTile(
-                              title: Text(producto.nombre ?? ''),
+                              title: Text(producto.destino ?? ''),
                               subtitle: Text(
-                                'Código: ${producto.codigo ?? ''}\nCantidad: ${producto.cantidad ?? ''} Cantidad Restante: ${producto.cantidadRest}\nPrecio Individual: ${producto.precioIndividual ?? ''}\nunidad de medida: ${producto.um ?? ''}\nfecha de introduccion: ${producto.fecha ?? ''}\nResponsable: ${producto.nombrePersona ?? ''}',
+                                'Código: ${producto.codigo ?? ''}\nCantidad: ${producto.cantidad ?? ''}',
                               ),
                               trailing: Text(
-                                'Precio: \$${producto.precioIndividual ?? ''}',
+                                'Precio: \$${producto.tipoMovimiento ?? ''}',
                               ),
                             ),
                           ],
