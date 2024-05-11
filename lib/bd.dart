@@ -187,7 +187,7 @@ class ConextionBD {
 
   static Future<List<MovimientoToDo>> getAllMovsByType(String mov) async {
     Results results = await _executeQuery(
-        "SELECT * FROM movimientosdone WHERE tipoMvimiento = '$mov' ");
+        "SELECT * FROM movimientosdone WHERE tipoMvimiento = '$mov' AND done = 0");
     List<MovimientoToDo> resultados = [];
     for (var row in results) {
       MovimientoToDo p = MovimientoToDo(
@@ -317,6 +317,7 @@ class ConextionBD {
             Producto(
                 fecha: element.fields['fecha'],
                 nombrePersona: element.fields['nombrePersona'],
+                idInventario: element.fields['idInventario'],
                 nombre:
                     '${element.fields['nombre']}\nTipo de Movimiento: ${element1.tipoMovimiento}\nDestino: ${element1.destino}',
                 codigo: element1.codigo,

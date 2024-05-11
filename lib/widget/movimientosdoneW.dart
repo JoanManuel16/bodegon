@@ -51,7 +51,7 @@ class _MovimientosDoneWState extends State<MovimientosDoneW> {
   @override
   void initState() {
     super.initState();
-    _cargarMovimientos("yuca");
+    _cargarMovimientos("movimieto casa");
     _cargarTiposMovimiento();
   }
 
